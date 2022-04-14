@@ -1,0 +1,79 @@
+.container{
+    display: flex;
+}
+.listUsers{
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    justify-content: center;
+}
+.listUsers_item {
+    flex: 0 1 200px ;
+    margin: 30px 0 0 0;
+}
+#searchBut{
+    margin-top: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    border: transparent;
+    background: transparent;
+}
+#searchBut:hover{
+    color: grey;
+}
+.View{
+    margin: 0 auto;
+    flex: 0 0 60%;
+}
+.user-prev-photo{
+    height: 150px;
+    width: 150px;
+    margin: 0 auto;
+    display: block;
+}
+.user-prev-name{
+    margin: 0;
+    text-align: center;
+}
+.user-list{
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+}
+.user-list-link{
+    margin: 0 20px 0 0;
+}
+#searchUsers{
+    height: 20px;
+    width: 300px;
+    margin-bottom: 10px;
+}
+.menu{
+    text-align: center;
+
+}
+.uploadUser{
+    margin: 20px 0;
+    font-size: 18px;
+    font-weight: bold;
+    border: transparent;
+    background: transparent;
+}
+.uploadUser:hover{
+    color: grey;
+}
+.uploadUserHide{
+    visibility: hidden;
+}
+.uploadUserVis{
+    visibility: visible;
+}
+.uploadBut{
+    margin-top: 30px;
+    text-align: center;
+}
