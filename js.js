@@ -21,13 +21,13 @@ const uploadUser = document.querySelector('#uploadUser')
             getUser(Users,pageCount).then(users => createUsers(users,true));
 })
 
-async function getUser(searchValue, page) : void{
+async function getUser(searchValue, page) {
     if (searchValue){
         return await fetch(`${URL}search/users?q=${searchValue}&per_page=20&page=${page}`);
     }
 }
 
-function createUsers(users, update = false): void{
+function createUsers(users, update = false){
     const listUsers = document.querySelector('#listUsers__users');
     const uploadBut = document.querySelector('#uploadUser');
     let userClone
@@ -59,12 +59,12 @@ function createUsers(users, update = false): void{
     }
 }
 
-function countUsersMessage(users): void {
+function countUsersMessage(users) {
     let countUsers = document.querySelector('#countUsers');
     countUsers.textContent = (users > 0) ? `Найдено ${users} пользователей` : 'По вашему запросу пользователей не найдено';
 }
 
-function createUserCard(user): void{
+function createUserCard(user){
     const elem = document.createElement('li');
     elem.className = 'listUsers_item'
     elem.addEventListener('click', () => detailedUserCard(user));
@@ -73,7 +73,7 @@ function createUserCard(user): void{
     return elem;
 }
 
-function detailedUserCard(user): void{
+function detailedUserCard(user){
     document.body.scrollTop = document.documentElement.scrollTop = 0;
     const CardContainer = document.querySelector('#userCard');
     const card = document.createElement('div');
@@ -94,7 +94,7 @@ function detailedUserCard(user): void{
         CardContainer.append(card);
     })
 }
-function getUserListHTML(data, title): void {
+function getUserListHTML(data, title) {
     return data.length ? `<div class="user-block">
                                   <h3 class="user-block-title">${title}</h3>
                                   <ul class="user-list">${this.templateItem(data)}</ul>
@@ -102,7 +102,7 @@ function getUserListHTML(data, title): void {
         : '';
 }
 
-function templateItem(data): void {
+function templateItem(data) {
     let userItem = '';
     data.forEach(user => {
         userItem += `<li class="user-list-item">
@@ -112,7 +112,7 @@ function templateItem(data): void {
     return userItem
 }
 
-async function loadUserData(user) : void{
+async function loadUserData(user) {
     const urls = [
         `${URL}users/${user}/following`,
         `${URL}users/${user}/followers`,
