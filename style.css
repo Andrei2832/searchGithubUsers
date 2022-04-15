@@ -1,3 +1,4 @@
+
 .container{
     display: flex;
 }
@@ -10,6 +11,7 @@
     justify-content: center;
 }
 .listUsers_item {
+    cursor: pointer;
     flex: 0 1 200px ;
     margin: 30px 0 0 0;
 }
@@ -24,20 +26,28 @@
     color: grey;
 }
 .View{
+    height: 800px;
     margin: 0 auto;
     flex: 0 0 60%;
+    overflow-y: scroll;
+    -ms-overflow-style: none;
+}
+.View::-webkit-scrollbar {
+    width: 0;
 }
 .user-prev-photo{
     height: 150px;
     width: 150px;
     margin: 0 auto;
     display: block;
+    border: 1px solid black;
 }
 .user-prev-name{
     margin: 0;
     text-align: center;
 }
 .user-list{
+    justify-content: center;
     display: flex;
     flex-wrap: wrap;
     list-style: none;
@@ -51,11 +61,12 @@
 #searchUsers{
     height: 20px;
     width: 300px;
-    margin-bottom: 10px;
+}
+#countUsers{
+    margin: 10px;
 }
 .menu{
     text-align: center;
-
 }
 .uploadUser{
     margin: 20px 0;
@@ -76,4 +87,37 @@
 .uploadBut{
     margin-top: 30px;
     text-align: center;
+}
+.image-user{
+    max-height: 300px;
+    max-width: 300px;
+}
+.user-block-title{
+    margin: 10px 0 0 0;
+}
+.user-card{
+    text-align: center;
+    margin-left: 10px;
+}
+.listUsers_item_Click{
+    background: #dbd8d8;
+    border-radius: 5px;
+}
+.loadText{
+    text-align: center;
+    font-size: 24px;
+    margin: 300px;
+}
+.user-block-title{
+    display: inline-block;
+}
+.refresh-data{
+    color: black;
+    background: transparent;
+    border-color: transparent;
+    text-decoration: underline;
+}
+.refresh-data:hover{
+    color: grey;
+    cursor: pointer;
 }
