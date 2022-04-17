@@ -47,6 +47,7 @@
     text-align: center;
 }
 .user-list{
+    border-top: 1px solid black;
     justify-content: center;
     display: flex;
     flex-wrap: wrap;
@@ -62,8 +63,12 @@
     height: 20px;
     width: 300px;
 }
-#countUsers{
+#message{
+    font-size: 24px;
     margin: 10px;
+}
+.error{
+    color: red;
 }
 .menu{
     text-align: center;
@@ -97,16 +102,25 @@
 }
 .user-card{
     text-align: center;
-    margin-left: 10px;
+}
+.containerCard{
+    margin-right: 100px;
 }
 .listUsers_item_Click{
     background: #dbd8d8;
     border-radius: 5px;
 }
 .loadText{
+    width: 400px;
     text-align: center;
     font-size: 24px;
-    margin: 300px;
+    margin: 200px;
+}
+.loadTextMini{
+    height: 100px;
+    text-align: center;
+    font-size: 20px;
+    margin: 10px;
 }
 .user-block-title{
     display: inline-block;

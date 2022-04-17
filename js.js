@@ -5,7 +5,7 @@ const searchBut = document.querySelector('#searchUsers');
 searchBut.addEventListener('input',() => {
     clearAll(1,1,1);
     const container = document.querySelector('.listUsers');
-    container.append(loadText());
+    container.append(loadText('loadText'));
 });
 searchBut.addEventListener('input',
     debounce(function (){
@@ -38,17 +38,24 @@ function debounce(func, wait, immediate) {
 }
 
 async function getUser(searchValue, page) {
-    if (searchValue.trim()){
-        return await fetch(`${URL}search/users?q=${searchValue}&per_page=20&page=${page}`);
-    }
+        try {
+            if (searchValue.trim()){
+                return await fetch(`${URL}search/users?q=${searchValue}&per_page=20&page=${page}`);
+            }
+        }catch (e){
+            console.log(e);
+            messageCountUsersOrError(0,e);
+            clearAll(1)
+            return false;
+        }
+
 }
 
 
 function createUsers(users, update = false){
+    const listUsers = document.querySelector('#listUsers__users');
     if (users){
         if (users.ok){
-            const listUsers = document.querySelector('#listUsers__users');
-
             let userClone;
             let countUser = 0;
 
@@ -79,7 +86,9 @@ function createUsers(users, update = false){
         }else {
             messageCountUsersOrError(0,users.status);
         }
-    }else{
+    }else if (users !== false){
+        console.log(users)
+        listUsers.innerHTML = '';
         messageCountUsersOrError(0,1)
     }
 }
@@ -90,15 +99,19 @@ function uploadButVisHide(users){
 }
 
 function messageCountUsersOrError(users,error) {
-    let countUsers = document.querySelector('#countUsers');
+        console.log(error)
+    let message = document.querySelector('#message');
+    message.className = '';
     if (users){
-        countUsers.textContent = (users > 4 ) ? `Найдено ${users} пользователей` :
-            (users > 1) ? `Найдено ${users} пользователя` :
-                (users === 1) ? 'Найден 1 пользователь' : 'По вашему запросу пользователей не найдено';
+        message.textContent = (users > 4 ) ? `Найдено ${users} пользователей` :
+            (users > 1) ? `Найдено ${users} пользователя` : 'Найден 1 пользователь';
+    }else if(users === 0){
+        message.textContent = 'По вашему запросу пользователей не найдено'
     }
     if (error){
-        countUsers.textContent = (error === 403) ? 'Слишком частые запросы! Немного подождите' :
-            (error === 1) ? 'Пустая строка!' : 'Неизвестная ошибка! Перезагрузите страницу!'
+        message.className = 'error';
+        message.textContent = (error === 403) ? 'Слишком частые запросы! Немного подождите' :
+            (error === 1) ? 'Пустая строка!' :'Неизвестная ошибка! Перезагрузите страницу!'
     }
 }
 
@@ -127,35 +140,36 @@ function createUserCard(user){
 }
 
 
-function loadText(){
+function loadText(className){
         const load = document.createElement('p');
-        load.className = 'loadText';
-        load.innerHTML = 'загрузка...';
+        load.className = className;
+        load.innerHTML = 'Загрузка...';
         return load;
 }
 
 let userClick = '';
-    function clickCardUser(elem){
-        if (userClick === ''){
-            elem.className = 'listUsers_item listUsers_item_Click';
-            userClick = elem;
-        }else {
-            userClick.className = 'listUsers_item';
-            elem.className = 'listUsers_item listUsers_item_Click';
-            userClick = elem;
-        }
+function clickCardUser(elem){
+    if (userClick === ''){
+        elem.className = 'listUsers_item listUsers_item_Click';
+        userClick = elem;
+    }else {
+        userClick.className = 'listUsers_item';
+        elem.className = 'listUsers_item listUsers_item_Click';
+        userClick = elem;
     }
+}
+
 function detailedUserCard(user,elem){
-        clearAll(0,1,0)
+    clearAll(0,1,0)
     clickCardUser(elem);
 
     const cardContainer = document.querySelector('#user-card');
-    cardContainer.append(loadText());
+    cardContainer.append(loadText('loadText'));
 
     const card = document.createElement('div');
+    card.className = 'containerCard'
     loadUserData(user.login).then(data => {
         const [following, followers, repos] = data;
-        console.log(following)
         const followingHTML = getUserListHTML(following, 'Following');
         const followersHTML = getUserListHTML(followers, 'Followers');
         const reposHTML = getUserListHTML(repos, 'Repos');
@@ -168,12 +182,13 @@ function detailedUserCard(user,elem){
             cardContainer.innerHTML = '';
         }
         cardContainer.append(card);
-        addClickData(user);
+        addClickUpdateData(user,'#butFollowing','#Following');
+        addClickUpdateData(user,'#butFollowers','#Followers',);
+        addClickUpdateData(user,'#butRepos','#Repos',);
     })
 
 }
 function getUserListHTML(data, title) {
-
     return data.length ? `<div class="user-block" >
                                   <h3 class="user-block-title">${title}</h3>
                                   <button class="refresh-data" id="but${title}">обновить</button>
@@ -182,20 +197,33 @@ function getUserListHTML(data, title) {
         : '';
 }
 
-function addClickData(user){
-    const followingBut = document.querySelector('#butFollowing');
-    followingBut.addEventListener('click',function (){
-        const following = document.querySelector('#Following');
-        following.append(loadText());
-        let folData = '';
-        console.log(user);
-        loadUserData(user,1,0,0).then(data =>{
-            folData = templateItem(data);
-        })
-        console.log(folData);
-        //following.innerHTML = folData;
-        //following.append(templateItem(loadUserData(user,1,0,0)))
-    });
+function addClickUpdateData(user,butClick,ID){
+    const updateDataBut = document.querySelector(butClick);
+    if (updateDataBut){
+        updateDataBut.addEventListener('click',function (){
+            const dataUpdate = document.querySelector(ID);
+            dataUpdate.innerHTML = "";
+            dataUpdate.append(loadText('loadTextMini'));
+            if (ID === '#Following'){
+                loadUserData(user.login,1,0,0).then(data =>{
+                    const [dataText] = data;
+                    dataUpdate.innerHTML = templateItem(dataText);
+                })
+            }
+            if (ID === '#Followers'){
+                loadUserData(user.login,0,1,0).then(data =>{
+                    const [dataText] = data;
+                    dataUpdate.innerHTML = templateItem(dataText);
+                })
+            }
+            if (ID === '#Repos'){
+                loadUserData(user.login,0,0,1).then(data =>{
+                    const [dataText] = data;
+                    dataUpdate.innerHTML = templateItem(dataText);
+                })
+            }
+        });
+    }
 }
 
 
@@ -211,16 +239,30 @@ function templateItem(data) {
 
 async function loadUserData(user, followingTrue = 1,followersTrue= 1,reposTrue= 1) {
     const urls = [];
-    if (followingTrue){
-        urls.push(`${URL}users/${user}/following`);
+    try {
+        if (followingTrue){
+            urls.push(`${URL}users/${user}/following`);
+        }
+        if (followersTrue){
+            urls.push(`${URL}users/${user}/followers`);
+        }
+        if (reposTrue){
+            urls.push(`${URL}users/${user}/repos`);
+        }
+        const requests = urls.map(url => fetch(url));
+
+        urls.map(url => fetch(url).then(data => {
+            let check = data.status;
+            if (check !== 200){
+                messageCountUsersOrError(0,check);
+            }
+        }));
+
+        return await Promise.all(requests)
+            .then(responses => Promise.all(responses.map(r => r.json())))
+    }catch (e){
+        console.log(e);
+        messageCountUsersOrError(0,e);
     }
-    if (followersTrue){
-        urls.push(`${URL}users/${user}/followers`);
-    }
-    if (reposTrue){
-        urls.push(`${URL}users/${user}/repos`);
-    }
-    const requests = urls.map(url => fetch(url));
-    return Promise.all(requests)
-        .then(responses => Promise.all(responses.map(r => r.json())))
+
 }
