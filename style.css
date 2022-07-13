@@ -74,8 +74,8 @@
     text-align: center;
 }
 .uploadUser{
-    margin: 20px 0;
-    font-size: 18px;
+    margin: 0;
+    font-size: 20px;
     font-weight: bold;
     border: transparent;
     background: transparent;
@@ -104,7 +104,7 @@
     text-align: center;
 }
 .containerCard{
-    margin-right: 100px;
+    /*margin-right: 100px;*/
 }
 .listUsers_item_Click{
     background: #dbd8d8;

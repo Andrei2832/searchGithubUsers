@@ -1,25 +1,46 @@
 let pageCount = 1;
 const URL = 'https://api.github.com/';
 
+const cardContainer = document.querySelector('#user-card');
 const searchBut = document.querySelector('#searchUsers');
+const uploadUser = document.querySelector('#uploadUser');
+const listUsers = document.querySelector('.listUsers');
+
+let selectedUser;
+
 searchBut.addEventListener('input',() => {
-    clearAll(1,1,1);
-    const container = document.querySelector('.listUsers');
-    container.append(loadText('loadText'));
+    clearListUsers();
+    clearCardUser();
+    clearUploadBut()
+    listUsers.append(loadText('loadText'));
 });
 searchBut.addEventListener('input',
     debounce(function (){
-        let Users = document.querySelector('#searchUsers').value;
+        let Users = searchBut.value;
         getUser(Users,1).then(users => createUsers(users));
     },1000));
 
-
-const uploadUser = document.querySelector('#uploadUser');
-    uploadUser.addEventListener('click',
+uploadUser.addEventListener('click',
         function (){
-            let Users = document.querySelector('#searchUsers').value;
+            let Users = searchBut.value;
             getUser(Users,pageCount).then(users => createUsers(users,true));
 })
+
+listUsers.addEventListener('click', function (event) {
+    let target = event.target.closest('li')
+    if (!listUsers.contains(target)) return
+    clickCardUser(target)
+})
+
+let userClick;
+function clickCardUser(elem){
+    if (userClick){
+        userClick.className = 'listUsers_item' ;
+    }
+    userClick = elem;
+        elem.className = 'listUsers_item listUsers_item_Click';
+
+}
 
 function debounce(func, wait, immediate) {
     let timeout;
@@ -43,54 +64,51 @@ async function getUser(searchValue, page) {
                 return await fetch(`${URL}search/users?q=${searchValue}&per_page=20&page=${page}`);
             }
         }catch (e){
-            console.log(e);
             messageCountUsersOrError(0,e);
-            clearAll(1)
+            clearListUsers()
             return false;
         }
 
 }
 
-
 function createUsers(users, update = false){
     const listUsers = document.querySelector('#listUsers__users');
-    if (users){
-        if (users.ok){
-            let userClone;
-            let countUser = 0;
-
+        if (users?.ok){
             try {
                 if (!update){
-                    clearAll(1,1,1);
+                    clearListUsers()
+                    clearUploadBut()
+                    clearCardUser()
                     pageCount = 1;
                 }
                 users.json().then((user) => {
                     if (user.items){
-                        userClone = user.items;
-                        countUser = user.total_count;
-                        userClone.forEach(user => listUsers.append(createUserCard(user)));
+                        user.items.forEach(user => listUsers.append(createUserCard(user)));
                         pageCount++;
                     }
                     else {
-                        clearAll(1,1,1);
+                        clearListUsers()
+                        clearUploadBut()
+                        clearCardUser()
                         pageCount = 1;
                     }
-                    messageCountUsersOrError(countUser);
-                    uploadButVisHide(countUser);
+                    messageCountUsersOrError(user.total_count);
+                    uploadButVisHide(user.total_count);
                 });
 
             }catch (e){
                 console.log(e);
                 messageCountUsersOrError(0,e);
             }
-        }else {
+        }
+        else if (users !== false){
+            listUsers.innerHTML = '';
+            messageCountUsersOrError(0,1)
+        }
+        else {
             messageCountUsersOrError(0,users.status);
         }
-    }else if (users !== false){
-        console.log(users)
-        listUsers.innerHTML = '';
-        messageCountUsersOrError(0,1)
-    }
+
 }
 
 function uploadButVisHide(users){
@@ -99,7 +117,6 @@ function uploadButVisHide(users){
 }
 
 function messageCountUsersOrError(users,error) {
-        console.log(error)
     let message = document.querySelector('#message');
     message.className = '';
     if (users){
@@ -111,23 +128,22 @@ function messageCountUsersOrError(users,error) {
     if (error){
         message.className = 'error';
         message.textContent = (error === 403) ? 'Слишком частые запросы! Немного подождите' :
-            (error === 1) ? 'Пустая строка!' :'Неизвестная ошибка! Перезагрузите страницу!'
+           'Пустая строка!'
     }
 }
 
-function clearAll(listUsersClear,cardUserClear,uploadButClear){
-    if (listUsersClear){
-        const listUsers = document.querySelector('#listUsers__users');
-        listUsers.innerHTML = '';
-    }
-    if (cardUserClear){
-        const cardUser = document.querySelector('#user-card');
-        cardUser.innerHTML = '';
-    }
-    if (uploadButClear){
-        const uploadBut = document.querySelector('#uploadUser');
-        uploadBut.className = 'uploadUser uploadUserHide';
-    }
+
+function clearListUsers(){
+    const listUsers = document.querySelector('#listUsers__users');
+    listUsers.innerHTML = '';
+}
+function clearCardUser(){
+    const cardUser = document.querySelector('#user-card');
+    cardUser.innerHTML = '';
+}
+function clearUploadBut(){
+    const uploadBut = document.querySelector('#uploadUser');
+    uploadBut.className = 'uploadUser uploadUserHide';
 }
 
 function createUserCard(user){
@@ -139,7 +155,6 @@ function createUserCard(user){
     return elem;
 }
 
-
 function loadText(className){
         const load = document.createElement('p');
         load.className = className;
@@ -147,85 +162,113 @@ function loadText(className){
         return load;
 }
 
-let userClick = '';
-function clickCardUser(elem){
-    if (userClick === ''){
-        elem.className = 'listUsers_item listUsers_item_Click';
-        userClick = elem;
-    }else {
-        userClick.className = 'listUsers_item';
-        elem.className = 'listUsers_item listUsers_item_Click';
-        userClick = elem;
-    }
-}
 
-function detailedUserCard(user,elem){
-    clearAll(0,1,0)
-    clickCardUser(elem);
 
-    const cardContainer = document.querySelector('#user-card');
-    cardContainer.append(loadText('loadText'));
-
-    const card = document.createElement('div');
-    card.className = 'containerCard'
-    loadUserData(user.login).then(data => {
-        const [following, followers, repos] = data;
-        const followingHTML = getUserListHTML(following, 'Following');
-        const followersHTML = getUserListHTML(followers, 'Followers');
-        const reposHTML = getUserListHTML(repos, 'Repos');
-        card.innerHTML = `<img class="image-user" src="${user.avatar_url}">
-                                  <h2 class="user-name">${user.login}</h2>
-                                     ${followingHTML}
-                                     ${followersHTML}
-                                     ${reposHTML}`;
-        if (cardContainer){
-            cardContainer.innerHTML = '';
-        }
-        cardContainer.append(card);
-        addClickUpdateData(user,'#butFollowing','#Following');
-        addClickUpdateData(user,'#butFollowers','#Followers',);
-        addClickUpdateData(user,'#butRepos','#Repos',);
+function detailedUserCard(user){
+    selectedUser = user
+    clearCardUser()
+    cardContainer.innerHTML = ''
+    createCard(user)
+    loadFollowingUser(user.login).then(data => {
+        const followingHTML = getUserListHTML(data, 'Following',user);
+        createItemsCard(user, followingHTML)
+    })
+    loadFollowersUser(user.login).then(data => {
+        const followersHTML = getUserListHTML(data, 'Followers',user);
+        createItemsCard(user, followersHTML)
+    })
+    loadReposUser(user.login).then(data => {
+        const reposHTML = getUserListHTML(data, 'Repos',user);
+        createItemsCard(user, reposHTML)
     })
 
 }
-function getUserListHTML(data, title) {
-    return data.length ? `<div class="user-block" >
-                                  <h3 class="user-block-title">${title}</h3>
-                                  <button class="refresh-data" id="but${title}">обновить</button>
-                                  <ul class="user-list" id="${title}">${this.templateItem(data)}</ul>
-                              </div>`
-        : '';
+
+
+function createCard(user){
+
+    const card = document.createElement('div');
+    card.className = 'containerCard'
+
+    card.innerHTML = `<img class="image-user" src="${user.avatar_url}">
+                                  <h2 class="user-name">${user.login}</h2>`;
+
+    cardContainer.append(card);
 }
 
-function addClickUpdateData(user,butClick,ID){
-    const updateDataBut = document.querySelector(butClick);
-    if (updateDataBut){
-        updateDataBut.addEventListener('click',function (){
-            const dataUpdate = document.querySelector(ID);
-            dataUpdate.innerHTML = "";
-            dataUpdate.append(loadText('loadTextMini'));
-            if (ID === '#Following'){
-                loadUserData(user.login,1,0,0).then(data =>{
-                    const [dataText] = data;
-                    dataUpdate.innerHTML = templateItem(dataText);
-                })
-            }
-            if (ID === '#Followers'){
-                loadUserData(user.login,0,1,0).then(data =>{
-                    const [dataText] = data;
-                    dataUpdate.innerHTML = templateItem(dataText);
-                })
-            }
-            if (ID === '#Repos'){
-                loadUserData(user.login,0,0,1).then(data =>{
-                    const [dataText] = data;
-                    dataUpdate.innerHTML = templateItem(dataText);
-                })
-            }
-        });
+function createItemsCard(user,data){
+    const card = document.createElement('div');
+    card.innerHTML = `${data}`;
+
+    cardContainer.append(card);
+}
+
+
+function getUserListHTML(data, title) {
+    if (data === undefined){
+        const res =  `<div class="user-block" >
+                                  <h3 class="user-block-title">${title}</h3>
+                                  <ul class="user-list" id="${title}1">
+                                    <li><p class="error">ОШИБКА</p></li>
+                                    <li><button class="uploadUser" id="${title}"> Обновить</button></li>
+                                  </ul>
+                              </div>`
+            ;
+
+        return res;
+    }else {
+        return data.length ? `<div class="user-block" >
+                                  <h3 class="user-block-title">${title}</h3>
+                                  <ul class="user-list" id="${title}">${this.templateItem(data)}</ul>
+                              </div>`
+            : '';
     }
 }
 
+cardContainer.addEventListener('click', function (event) {
+    let but = event.target.closest('button')
+    if (!cardContainer.contains(but)) return;
+    if (but.id === 'Following')
+        updateFollowing(selectedUser, but.id)
+    if (but.id === 'Followers')
+        updateFollowers(selectedUser, but.id)
+    if (but.id === 'Repos')
+        updateRepos(selectedUser, but.id)
+})
+
+function updateFollowing(user,ID){
+    const search = `#${ID}1`
+    const dataUp = document.querySelector(search)
+
+    loadFollowingUser(user.login).then(data => {
+        if (data) {
+            dataUp.innerHTML = ''
+            dataUp.innerHTML = templateItem(data)
+        }
+    })
+}
+function updateFollowers(user,ID){
+    const search = `#${ID}1`
+    const dataUp = document.querySelector(search)
+
+    loadFollowersUser(user.login).then(data => {
+        if (data) {
+            dataUp.innerHTML = ''
+            dataUp.innerHTML = templateItem(data)
+        }
+    })
+}
+function updateRepos(user,ID){
+    const search = `#${ID}1`
+    const dataUp = document.querySelector(search)
+
+    loadReposUser(user.login).then(data => {
+        if (data) {
+            dataUp.innerHTML = ''
+            dataUp.innerHTML = templateItem(data)
+        }
+    })
+}
 
 function templateItem(data) {
     let userItem = '';
@@ -237,32 +280,22 @@ function templateItem(data) {
     return userItem
 }
 
-async function loadUserData(user, followingTrue = 1,followersTrue= 1,reposTrue= 1) {
-    const urls = [];
+async function loadFollowingUser (user){
+    return await loadUserData(`${URL}users/${user}/following`)
+}
+function loadFollowersUser (user){
+    return loadUserData(`${URL}users/${user}/followers`)
+}
+function loadReposUser (user){
+    return loadUserData(`${URL}users/${user}/repos`)
+}
+
+async function loadUserData(data) {
     try {
-        if (followingTrue){
-            urls.push(`${URL}users/${user}/following`);
-        }
-        if (followersTrue){
-            urls.push(`${URL}users/${user}/followers`);
-        }
-        if (reposTrue){
-            urls.push(`${URL}users/${user}/repos`);
-        }
-        const requests = urls.map(url => fetch(url));
-
-        urls.map(url => fetch(url).then(data => {
-            let check = data.status;
-            if (check !== 200){
-                messageCountUsersOrError(0,check);
-            }
-        }));
-
-        return await Promise.all(requests)
-            .then(responses => Promise.all(responses.map(r => r.json())))
+        return (await fetch(data)).json()
     }catch (e){
         console.log(e);
-        messageCountUsersOrError(0,e);
+        //messageCountUsersOrError(0,e);
     }
 
 }
